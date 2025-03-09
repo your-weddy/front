@@ -42,7 +42,7 @@ export default function DashBoardModal({
     신혼여행: { src: airplaneIcon, scale: 2 },
     "예물/예단": { src: ringIcon, scale: 1 },
     "예복/한복": { src: hanbokIcon, scale: 1 },
-    본식:  { src: congratulationIcon, scale: 3, yOffset: 60, xOffset: -20 },
+    본식:  { src: congratulationIcon, scale: 3, yOffset: 60, xOffset: -10 },
     신혼집: { src: houseIcon, scale: 1 },
   };
 

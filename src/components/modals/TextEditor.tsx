@@ -152,19 +152,38 @@ export default function TextEditor({
         editorRef.current?.focus();
         restoreSelection();
 
-        const embedCode = `
-          <div style="position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden;">
-            <iframe 
-              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" 
-              src="https://www.youtube.com/embed/${videoId}" 
-              frameborder="0" 
-              allowfullscreen>
-            </iframe>
-          </div>
-        `;
+        const randomId = Math.random().toString(36).substring(2, 9);
+        const youtubeContainerId = `youtube-container-${randomId}`;
+
+        const embedCode = `<div contenteditable="false" id="${youtubeContainerId}" style="position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; margin: 10px 0;">
+          <iframe 
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" 
+            src="https://www.youtube.com/embed/${videoId}" 
+            frameborder="0" 
+            allowfullscreen>
+          </iframe>
+        </div>&#8203;`;  
 
         document.execCommand("insertHTML", false, embedCode);
-        handleChange();
+
+        setTimeout(() => {
+          const youtubeContainer = editorRef.current?.querySelector(
+            `#${youtubeContainerId}`
+          );
+          if (youtubeContainer && editorRef.current) {
+            const range = document.createRange();
+            range.setStartAfter(youtubeContainer);
+            range.collapse(true);
+  
+            const selection = window.getSelection();
+            if (selection) {
+              selection.removeAllRanges();
+              selection.addRange(range);
+              editorRef.current.focus();
+              handleChange();
+            }
+          }
+        }, 10);
       } else {
         alert("유효한 유튜브 URL이 아닙니다.");
       }
