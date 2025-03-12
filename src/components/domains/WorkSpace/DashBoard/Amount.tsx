@@ -88,7 +88,6 @@ export default function Amount({ data, setAmount, onOpenModal }: AmountProps) {
       onOpenModal({
         ...item,
         smallCatItems: item.smallCatItems.map((catItem) => {
-          // console.log("Small cat item:", catItem);
           return catItem;
         }),
       });

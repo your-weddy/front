@@ -6,14 +6,14 @@ import { useEffect } from "react";
 
 import closeIcon from "@/../public/icons/close-modal-icon.svg";
 import hanbokIcon from "@/../public/icons/progress-hanbok-icon.svg";
-import ringIcon from "@/../public/icons/progress-ring-icon.png";
+import ringIcon from "@/../public/images/Ring.gif";
 import airplaneIcon from "@/../public/images/Airplane_Gif.gif";
 import calenderIcon from "@/../public/images/Calendar.gif";
 import congratulationIcon from "@/../public/images/Congratulations.gif";
 import defaultIcon2 from "@/../public/images/Heart_Gif.gif";
 import lipstickIcon from "@/../public/images/Lipstick.gif";
 import weddingIcon from "@/../public/images/Wedding Arch.gif";
-import houseIcon from "@/../public/icons/progress-house.png";
+import houseIcon from "@/../public/images/House.gif";
 
 const cn = classNames.bind(styles);
 
@@ -40,10 +40,10 @@ export default function DashBoardModal({
     웨딩홀: { src: weddingIcon, scale: 2.5, yOffset: 10, xOffset: -10 },
     스드메: { src: lipstickIcon, scale: 3, yOffset: 20, xOffset: -10 },
     신혼여행: { src: airplaneIcon, scale: 2 },
-    "예물/예단": { src: ringIcon, scale: 1 },
+    "예물/예단": { src: ringIcon, scale: 2, xOffset: -40 },
     "예복/한복": { src: hanbokIcon, scale: 1 },
     본식:  { src: congratulationIcon, scale: 3, yOffset: 60, xOffset: -10 },
-    신혼집: { src: houseIcon, scale: 1 },
+    신혼집: { src: houseIcon, scale: 3, xOffset: -10 },
   };
 
   const defaultIcon: IconConfig = { src: defaultIcon2, scale: 1.3, yOffset: -10 };
