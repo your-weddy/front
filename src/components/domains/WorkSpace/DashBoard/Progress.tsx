@@ -24,7 +24,7 @@ export default function Progress() {
   // 체크리스트 대분류들
   const { data: cardDatas } = useQuery({
     queryKey: ["cardData", userData],
-    queryFn: () => getCard(userData.id, ""),
+    queryFn: () => getCard(userData.id, "", ""),
   });
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function Progress() {
   // 체크리스트 대분류중 완료된거
   const { data: cardDatasComplete } = useQuery({
     queryKey: ["cardData", "완료", userData],
-    queryFn: () => getCard(userData.id, "완료"),
+    queryFn: () => getCard(userData.id, "완료", ""),
   });
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export default function Progress() {
   // 체크리스트 대분류중 진행중
   const { data: cardDatasIng } = useQuery({
     queryKey: ["cardData", "진행중", userData],
-    queryFn: () => getCard(userData.id, "진행중"),
+    queryFn: () => getCard(userData.id, "진행중", ""),
   });
 
   useEffect(() => {
@@ -85,7 +85,7 @@ export default function Progress() {
   // 체크리스트 대분류중 시작전
   const { data: cardDatasPre } = useQuery({
     queryKey: ["cardData", "시작전", userData],
-    queryFn: () => getCard(userData.id, "시작전"),
+    queryFn: () => getCard(userData.id, "시작전", ""),
   });
 
   useEffect(() => {

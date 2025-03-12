@@ -11,11 +11,11 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import styles from "./style.module.scss";
 
-import bride from "@/../public/images/dashBoard-bride.png";
-import groom from "@/../public/images/dashBoard-groom.png";
 import { getMyData } from "@/lib/apis/authme";
 import { getCheckList } from "@/lib/apis/firstVisit";
 import useReStore from "@/lib/store/reStore";
+import AssigneeFilter from "@/components/commons/Filter/assigneeFilter";
+import useUserDataStore from "@/lib/store/user";
 
 const cn = classNames.bind(styles);
 
@@ -27,10 +27,11 @@ export default function DashBoard() {
   const [showModal, setShowModal] = useState(false);
   const { setSelectLargeItem, setChecklistId } = useWorkSpaceStore();
   const { sideMenuState } = useSideMenuStore();
+  const { userData, setUserData } = useUserDataStore();
 
   const { data: cardDatas, isSuccess } = useQuery({
     queryKey: ["cardData", cardId, reRander],
-    queryFn: () => getCard(cardId, ""),
+    queryFn: () => getCard(cardId, "", ""),
   });
   const { data: memberData } = useQuery({
     queryKey: ["memberData", cardId, reRander],
@@ -49,8 +50,9 @@ export default function DashBoard() {
   useEffect(() => {
     if (data) {
       setCardId(data.id);
+      setUserData(data);
     }
-  }, [data, getCheck]);
+  }, [data, getCheck, setUserData]);
 
   const handleOpenModal = (item: any) => {
     if (cardDatas && cardDatas.length > 0) {
@@ -80,12 +82,20 @@ export default function DashBoard() {
   useEffect(() => {
     if (memberData && memberData.id) {
       setChecklistId(memberData.id);
-      // console.log("체크리스트 ID 설정됨:", memberData.id);
     }
   }, [memberData, setChecklistId]);
 
   useEffect(() => {
-    // console.log("Modal state:", { showModal, selectedItem });
+    setAmount(cardDatas);
+  }, [isSuccess]);
+
+  useEffect(() => {
+    if (memberData && memberData.id) {
+      setChecklistId(memberData.id);
+    }
+  }, [memberData, setChecklistId]);
+
+  useEffect(() => {
   }, [showModal, selectedItem]);
 
   useEffect(() => {
@@ -106,29 +116,7 @@ export default function DashBoard() {
               onOpenModal={handleOpenModal}
             />
           )}
-          <div className={cn("assigneeNameWrap")}>
-            <p>담당자</p>
-            <div className={cn("assigneeNameContent")}>
-              <div>
-                <Image
-                  src={groom}
-                  alt="담당자 신부인 리스트"
-                  width={193}
-                  height={230}
-                />
-                <p>10개</p>
-              </div>
-              <div>
-                <Image
-                  src={bride}
-                  alt="담당자 신랑인 리스트"
-                  width={193}
-                  height={230}
-                />
-                <p>5개</p>
-              </div>
-            </div>
-          </div>
+          <AssigneeFilter />
         </div>
       </main>
       <SideMenu state={sideMenuState} />

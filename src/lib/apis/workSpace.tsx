@@ -9,11 +9,16 @@ export const getMember = async (memberId: any) => {
   }
 };
 
-export const getCard = async (memberId: any, itemStatus: string) => {
+export const getCard = async (memberId: any, itemStatus: string, itemAssignee: string) => {
   try {
     if (itemStatus) {
       const res = await instance.get(
         `/checklist/large-cat-item?memberId=${memberId}&itemStatuses=${itemStatus}`
+      );
+      return res.data;
+    } else if (itemAssignee) {
+      const res = await instance.get(
+        `/checklist/large-cat-item?memberId=${memberId}&itemAssignee=${itemAssignee}`
       );
       return res.data;
     } else {
@@ -132,13 +137,12 @@ export const postFile = async (data: any) => {
 };
 export const deleteFile = async (fileUrl: any) => {
   try {
-    const urlWithoutQuery = fileUrl.split("?")[0];
-    const filename = urlWithoutQuery.split("/").pop() || "";
-
-    const res = await instance.delete(`/api/files/${filename}`);
+    const res = await instance.delete(`/api/files`, {
+      params: { fileUrl }
+    });
     return res;
   } catch (e) {
-    console.error(e);
+    return { success: false, error: e };
   }
 };
 export const saveProfile = async (id: any, dat: any) => {
