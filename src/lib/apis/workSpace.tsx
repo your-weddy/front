@@ -137,13 +137,12 @@ export const postFile = async (data: any) => {
 };
 export const deleteFile = async (fileUrl: any) => {
   try {
-    const urlWithoutQuery = fileUrl.split("?")[0];
-    const filename = urlWithoutQuery.split("/").pop() || "";
-
-    const res = await instance.delete(`/api/files/${filename}`);
+    const res = await instance.delete(`/api/files`, {
+      params: { fileUrl }
+    });
     return res;
   } catch (e) {
-    console.error(e);
+    return { success: false, error: e };
   }
 };
 export const saveProfile = async (id: any, dat: any) => {

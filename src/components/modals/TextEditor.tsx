@@ -8,6 +8,8 @@ import fontUnder from "@/../public/icons/font-underline.png";
 import link from "@/../public/icons/link-icon.png";
 import picture from "@/../public/icons/picture-icon.png";
 import youtube from "@/../public/icons/youtube-icon.png";
+import deleteItem from "@/../public/icons/close-modal-icon.svg"
+
 import { deleteFile, postFile } from "@/lib/apis/workSpace";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
@@ -64,6 +66,7 @@ export default function TextEditor({
   const [attachedFileUrl, setAttachedFileUrl] = useState<string | undefined>(
     item.attachedFileUrl
   );
+  const [attachedFiles, setAttachedFiles] = useState<{ id: string; url: string }[]>([]);
   const [prevHtml, setPrevHtml] = useState<string>("");
 
   useEffect(() => {
@@ -250,8 +253,10 @@ export default function TextEditor({
       const fileUrl = await uploadFileToS3(file);
       const fileContainerId = `file-container-${randomId}`;
       restoreSelection();
+      
       const fileName = file.name;
       const fileIcon = getFileIcon(fileName);
+      setAttachedFiles(prev => [...prev, { id: randomId, url: fileUrl }]);
 
       let fileSize = "";
       if (file.size < 1024 * 1024) {
@@ -260,20 +265,30 @@ export default function TextEditor({
         fileSize = (file.size / (1024 * 1024)).toFixed(2) + " MB";
       }
 
-      const fileHtml = `<div contenteditable="false" id="${fileContainerId}" class="file-attachment" style="margin: 10px 0; padding: 10px; border: 1px solid #e0e0e0; border-radius: 4px; background-color: #f8f8f8;">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div style="display: flex; align-items: center; color: #333;">
-          <span style="font-size: 24px; margin-right: 10px;">${fileIcon}</span>
-          <div>
-            <div style="font-weight: bold;">${fileName}</div>
-            <div style="color: #666; font-size: 12px;">${fileSize}</div>
-          </div>
+      const fileHtml = `<div contenteditable="false" id="${fileContainerId}" class="file-attachment" data-file-id="${randomId}" data-file-url="${fileUrl}" style="margin: 10px 0; padding: 10px; border: 1px solid #e0e0e0; border-radius: 4px; background-color: #f8f8f8;">
+    <div style="display: flex; justify-content: space-between; align-items: center; position: relative;">
+      <div style="display: flex; align-items: center; color: #333;">
+        <span style="font-size: 24px; margin-right: 10px;">${fileIcon}</span>
+        <div>
+          <div style="font-weight: bold;">${fileName}</div>
+          <div style="color: #666; font-size: 12px;">${fileSize}</div>
         </div>
+      </div>
+      <div style="display: flex; gap: 8px;">
         <a href="${fileUrl}" download="${fileName}" style="padding: 5px 10px; background-color: #f0f0f0; border-radius: 4px; text-decoration: none; color: #333; font-size: 12px;">
           다운로드
         </a>
+        <button 
+          type="button" 
+          class="file-delete-btn" 
+          data-file-id="${randomId}" 
+          data-file-url="${fileUrl}" 
+          style="padding: 5px 10px; background-color: #ff5252; border: none; border-radius: 4px; color: white; font-size: 12px; cursor: pointer;">
+          삭제
+        </button>
       </div>
-    </div>&#8203;`;
+    </div>
+  </div>&#8203;`;
 
       document.execCommand("insertHTML", false, fileHtml);
 
@@ -345,8 +360,17 @@ export default function TextEditor({
       const imageUrl = await uploadFileToS3(file);
       const imgContainerId = `img-container-${randomId}`;
       restoreSelection();
+      setAttachedFiles(prev => [...prev, { id: randomId, url: imageUrl }]);
 
-      const imgHtml = `<div contenteditable="false" id="${imgContainerId}" class="image-attachment" style="margin: 10px 0; text-align: center;" ondragstart="return false;" oncontextmenu="return false;">
+      const imgHtml = `<div contenteditable="false" id="${imgContainerId}" class="image-attachment" data-file-id="${randomId}" data-file-url="${imageUrl}" style="position: relative; margin: 10px 0; text-align: center;" ondragstart="return false;" oncontextmenu="return false;">
+      <button 
+        type="button" 
+        class="img-delete-btn" 
+        data-file-id="${randomId}" 
+        data-file-url="${imageUrl}" 
+        style="position: absolute; top: 5px; right: 5px; width: 25px; height: 25px; border: 2px solid #ccc; border-radius: 50%; font-size: 10px; display: flex; justify-content: center; align-items: center;">
+        <img src="/icons/close-modal-icon.svg" alt="파일 삭제" style="width: 15px; height: 15px; color: #ccc;" />
+      </button>
       <img src="${imageUrl}" alt="업로드된 이미지" style="max-width: 100%; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); user-select: none; pointer-events: none;" draggable="false" />
     </div>&#8203;`;
 
@@ -388,79 +412,52 @@ export default function TextEditor({
     }
   };
 
-  const extractFileUrlFromHtml = (html: string): string | null => {
-    const fileMatch = html.match(/href="([^"]+)"\s+download=/);
-    if (fileMatch && fileMatch[1]) {
-      return fileMatch[1];
-    }
-
-    const imgMatch = html.match(/img\s+src="([^"]+)"/);
-    if (imgMatch && imgMatch[1]) {
-      return imgMatch[1];
-    }
-
-    return null;
-  };
-
-  const extractFileKeyFromS3Url = (url: string): string | null => {
+  const deleteFiles = async (id: string, url: string) => {
     try {
-      const urlWithoutQuery = url.split("?")[0];
-      const parsedUrl = new URL(urlWithoutQuery);
-      const pathname = parsedUrl.pathname;
-      const filename = pathname.split("/").pop() || "";
-      if (filename) {
-        return filename;
+      await deleteFile(url);
+      setAttachedFiles(prev => prev.filter(file => file.id !== id));
+      const remainingFiles = attachedFiles.filter(file => file.id !== id);
+      if (remainingFiles.length === 0) {
+        setAttachedFileUrl(undefined);
+        if (onFileUpload) onFileUpload("", false);
+      } else {
+        const lastFile = remainingFiles[remainingFiles.length - 1];
+        setAttachedFileUrl(lastFile.url);
+        if (onFileUpload) onFileUpload(lastFile.url, false);
       }
-      const filenameMatch = url.match(/\/([^\/]+?)(\?|$)/);
-      return filenameMatch ? filenameMatch[1] : null;
+      handleChange();
     } catch (error) {
-      console.error("Failed to parse S3 URL:", error);
-      return null;
+      console.error("파일 삭제 오류:", error);
+      alert("파일 삭제에 실패했습니다.");
     }
   };
-
-  const checkForFileDeletedContent = async (newContent: string) => {
-    if (!editorRef.current) return;
-    const hasFileAttachmentBefore = prevHtml.includes(
-      'class="file-attachment"'
-    );
-    const hasFileAttachmentNow = newContent.includes('class="file-attachment"');
-    const hasImageAttachmentBefore = prevHtml.includes(
-      'class="image-attachment"'
-    );
-    const hasImageAttachmentNow = newContent.includes(
-      'class="image-attachment"'
-    );
-
-    if (
-      (hasFileAttachmentBefore && !hasFileAttachmentNow) ||
-      (hasImageAttachmentBefore && !hasImageAttachmentNow)
-    ) {
-      // console.log("파일 또는 이미지 삭제 감지됨");
-      const fileUrl = extractFileUrlFromHtml(prevHtml);
-
-      if (fileUrl) {
-        try {
-          // console.log("삭제할 파일 URL:", fileUrl);
-          await deleteFile(fileUrl);
-          // console.log("S3에서 파일 삭제 성공");
-        } catch (error) {
-          // console.error("S3에서 파일 삭제 실패:", error);
+  
+  const handleEditorClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    
+    if (target.classList.contains('file-delete-btn') || target.classList.contains('img-delete-btn')) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const id = target.getAttribute('data-file-id');
+      const url = target.getAttribute('data-file-url');
+      
+      if (id && url) {
+        const fileElement = document.querySelector(`[data-file-id="${id}"]`);
+        if (fileElement) {
+          fileElement.remove();
         }
-      }
-      setAttachedFileUrl(undefined);
-      if (onFileUpload) {
-        onFileUpload("", false);
+        
+        deleteFiles(id, url);
       }
     }
-    setPrevHtml(newContent);
   };
 
   const handleChange = () => {
     if (editorRef.current) {
       setIsUpdatingContent(true);
       const newContent = editorRef.current.innerHTML;
-      checkForFileDeletedContent(newContent);
+      setPrevHtml(newContent);
       onContentChange(newContent);
       setTimeout(() => {
         setIsUpdatingContent(false);
@@ -490,6 +487,7 @@ export default function TextEditor({
           className={cn("editor", "scroll")}
           contentEditable={true}
           onInput={handleChange}
+          onClick={handleEditorClick}
           onFocus={handleFocus}
           onBlur={handleBlur}
           spellCheck="false"

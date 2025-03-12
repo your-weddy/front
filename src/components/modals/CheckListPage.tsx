@@ -3,6 +3,8 @@ import date from "@/../public/icons/date.svg";
 import deleteIcon from "@/../public/icons/deleteRed.svg";
 import detail from "@/../public/icons/detail-icon.png";
 import assignee from "@/../public/icons/people.svg";
+import right from "@/../public/icons/right-icon.svg"
+
 import { deleteItem } from "@/lib/apis/types/deleteItem";
 import { UpdateItemPayload, updateItem } from "@/lib/apis/types/updateItem";
 import { getItem } from "@/lib/apis/workSpace";
@@ -197,8 +199,6 @@ export default function CheckListPage({
 
   useEffect(() => {
     if (smallCatData) {
-      // console.log("Loaded small cat data:", smallCatData);
-
       const displayAmount = smallCatData.amount
         ? smallCatData.amount / 10000
         : 0;
@@ -324,13 +324,15 @@ export default function CheckListPage({
   return (
     <div className={cn("checkModalWrap")} ref={modalRef}>
       <div className={cn("modalNav")}>
-        <button onClick={onClose}>→</button>
+        <button onClick={onClose}>
+          <Image src={right} alt="화면 접기" width={26} height={26} />
+        </button>
         <button className={cn("trashIcon")} onClick={handleDelete}>
           <Image
             src={deleteIcon}
             alt="소분류 삭제하기"
-            width={24}
-            height={24}
+            width={26}
+            height={26}
           />
         </button>
       </div>

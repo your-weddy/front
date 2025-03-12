@@ -44,7 +44,7 @@ export const useWorkSpaceStore = create<WorkSpaceState>((set, get) => ({
   setSelectedItem: (item) => set({ selectedItem: item }),
   setSideMenuValue: (value) => set({ sideMenuValue: value }),
   fetchCardData: async (cardId) => {
-    const data = await getCard(cardId, "");
+    const data = await getCard(cardId, "", "");
     set({ card: data });
     set({ sideMenuValue: data });
   },
