@@ -9,11 +9,16 @@ export const getMember = async (memberId: any) => {
   }
 };
 
-export const getCard = async (memberId: any, itemStatus: string) => {
+export const getCard = async (memberId: any, itemStatus: string, itemAssignee: string) => {
   try {
     if (itemStatus) {
       const res = await instance.get(
         `/checklist/large-cat-item?memberId=${memberId}&itemStatuses=${itemStatus}`
+      );
+      return res.data;
+    } else if (itemAssignee) {
+      const res = await instance.get(
+        `/checklist/large-cat-item?memberId=${memberId}&itemAssignee=${itemAssignee}`
       );
       return res.data;
     } else {

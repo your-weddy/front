@@ -52,11 +52,13 @@ export default function WorkSpace() {
   const { color } = useColorStore();
   const { selectedItem, setSelectedItem, setChecklistId } = useWorkSpaceStore();
   const [showSaveModal, setShowSaveModal] = useState(false);
-  const { filterBox } = useFilterStore();
+  const { filterBox, setFilterBox } = useFilterStore();
   const [profile, setProfile] = useState<string>("");
   const [saveBtn, setSaveBtn] = useState<boolean>(false);
   const { userData, setUserData } = useUserDataStore();
 
+  const assignee = filterBox.assignee && filterBox.assignee.length > 0 
+    ? filterBox.assignee[0] : "";
   const now = new Date();
 
   const { register, handleSubmit, watch } = useForm<IFormInput>();
@@ -105,9 +107,15 @@ export default function WorkSpace() {
 
   // 체크리스트 대분류들
   const { data: cardDatas, isSuccess } = useQuery({
-    queryKey: ["cardData", cardId, reRander],
-    queryFn: () => getCard(cardId, filterBox.progressStatus),
+    queryKey: ["cardData", cardId, reRander, ""],
+    queryFn: () => getCard(cardId, filterBox.progressStatus, ""),
     enabled: !dDay && cardId !== 0,
+  });
+
+  const { data: filteredCardDatas, isLoading, isError } = useQuery({
+    queryKey: ["cardData", assignee, userData],
+    queryFn: () => getCard(userData.id, "", assignee),
+    enabled: !!userData?.id,
   });
 
   // dday와 체크리스트 정보
@@ -138,6 +146,14 @@ export default function WorkSpace() {
   useEffect(() => {
     setReRander((prev: number) => prev + 1);
   }, [filterBox.progressStatus]);
+
+  useEffect(() => {
+    if (filteredCardDatas) {
+      setCard(filteredCardDatas);
+    } else {
+      setCard([]);
+    }
+  }, [filteredCardDatas]);
 
   useEffect(() => {
     setProfile(loginData?.profileImageUrl);
@@ -267,11 +283,29 @@ export default function WorkSpace() {
       location.reload();
     },
   });
+  const isFilterApplied = () => {
+    return (
+      (filterBox.category && filterBox.category.length > 0) ||
+      !!filterBox.progressStatus ||
+      (filterBox.assignee && filterBox.assignee.length > 0) ||
+      (filterBox.dueDate !== "" && filterBox.dueDate !== undefined)
+    );
+  };
+  const getFilterDisplayText = () => {
+    const filterTexts = [];
 
+    if (filterBox.assignee && filterBox.assignee.length > 0) {
+      filterTexts.push(`담당자: ${filterBox.assignee.join(', ')}`);
+    }
+    return filterTexts.join(', ');
+  };
   const handleChangeDday = () => {
     setDDay(false);
     let dayBox: any = { memberId: memberData.memberId, dDay: day };
     postDay(dayBox);
+  };
+  const isAssigneeFilterApplied = () => {
+    return filterBox.assignee && filterBox.assignee.length > 0;
   };
 
   return (
@@ -398,6 +432,20 @@ export default function WorkSpace() {
 
       {showSaveModal && (
         <SaveModal onClose={handleCloseSaveModal} statusName={""} />
+      )}
+
+      {isAssigneeFilterApplied() && (
+        <div className={cn("filterIndicator")}>
+          <div className={cn("activeFilters")}>
+            <span>담당자: {filterBox.assignee.join(', ')}</span>
+          </div>
+          <button 
+            onClick={() => setFilterBox({...filterBox, assignee: []})}
+            className={cn("clearFiltersBtn")}
+          >
+            담당자 필터 초기화
+          </button>
+        </div>
       )}
     </div>
   );

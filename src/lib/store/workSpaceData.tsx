@@ -11,6 +11,7 @@ interface WorkSpaceState {
   selectLargeItem: LargeCatItem | null;
   selectedItem: SmallCatItem | null;
   sideMenuValue: any;
+  assigneeFilter: string | null;
   setChecklistId: (id: number) => void;
   setCard: (card: any[]) => void;
   setCardId: (id: number) => void;
@@ -21,6 +22,7 @@ interface WorkSpaceState {
   setSideMenuValue: (value: any) => void;
   fetchCardData: (cardId: number) => Promise<void>;
   fetchMemberData: (cardId: number) => Promise<void>;
+  setAssigneeFilter: (assignee: string | null) => void;
 }
 
 export const useWorkSpaceStore = create<WorkSpaceState>((set, get) => ({
@@ -32,6 +34,7 @@ export const useWorkSpaceStore = create<WorkSpaceState>((set, get) => ({
   selectLargeItem: null,
   selectedItem: null,
   sideMenuValue: null,
+  assigneeFilter: null,
   setChecklistId: (id) => set({ checklistId: id }),
   setCard: (card) => set({ card }),
   setCardId: (id) => set({ cardId: id }),
@@ -49,4 +52,5 @@ export const useWorkSpaceStore = create<WorkSpaceState>((set, get) => ({
     const data = await getMember(cardId);
     set({ memberData: data });
   },
+  setAssigneeFilter: (assigneeFilter) => set({ assigneeFilter }),
 }));
