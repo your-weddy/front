@@ -20,34 +20,39 @@ export default function AssigneeFilter() {
   const { filterBox, setFilterBox } = useFilterStore();
   const { userData } = useUserDataStore();
 
-  const { data: groomDatas } = useQuery({
-    queryKey: ["cardData", "신랑", userData?.id],
-    queryFn: () => getCard(userData.id, "", "신랑"),
-    enabled: !!userData?.id,
-  });
-  const { data: brideDatas } = useQuery({
-    queryKey: ["cardData", "신부", userData?.id],
-    queryFn: () => getCard(userData.id, "", "신부"),
+  const { data: assigneeData } = useQuery({
+    queryKey: ["cardData", userData?.id],
+    queryFn: () => {
+      if (!userData?.id) return [];
+      return getCard(userData.id, "", "");
+    },
     enabled: !!userData?.id,
   });
   
   useEffect(() => {
-    if (!groomDatas) return;
-    const totalGroomPlans = groomDatas.reduce(
-      (acc: any, item: any) => acc + (item.smallCatItems?.length || 0),
-      0
-    );
-    setGroomCount(totalGroomPlans);
-  }, [groomDatas]);
+    if (!assigneeData) return;
+    let groomCount = 0;
+    assigneeData.forEach((item: any) => {
+      if (item.smallCatItems && Array.isArray(item.smallCatItems)) {
+        const groomItems = item.smallCatItems.filter(
+          (item: any) => item.assigneeName === "신랑"
+        );
+        groomCount += groomItems.length;
+      }
+    });
+    setGroomCount(groomCount);
 
-  useEffect(() => {
-    if (!brideDatas) return;
-    const totalBridePlans = brideDatas.reduce(
-      (acc: any, item: any) => acc + (item.smallCatItems?.length || 0),
-      0
-    );
-    setBrideCount(totalBridePlans);
-  }, [brideDatas]);
+    let brideCount = 0;
+    assigneeData.forEach((item: any) => {
+      if (item.smallCatItems && Array.isArray(item.smallCatItems)) {
+        const brideItems = item.smallCatItems.filter(
+          (item: any) => item.assigneeName === "신부"
+        );
+        brideCount += brideItems.length;
+      }
+    });
+    setBrideCount(brideCount);
+  }, [assigneeData]);
 
   const handleAssigneeFilter = (assignee: string) => {
     setFilterBox({
